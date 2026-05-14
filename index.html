@@ -105,7 +105,7 @@
                         <p class="text-xs text-zinc-500">Designed for persistent servers with high-availability infrastructure and uptime monitoring.</p>
                     </div>
                 </div>
-                <div class="pt-4 border-t border-zinc-800 text-[10px] text-zinc-500 italic">Version 1.2.0 • Optimized for all screen sizes • Session Persistence Enabled</div>
+                <div class="pt-4 border-t border-zinc-800 text-[10px] text-zinc-500 italic">Version 1.2.0 • Optimized for all screen sizes • Real-time Sync Enabled</div>
             </div>
             <button onclick="closeModal('aboutModal')" class="w-full mt-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all">Close</button>
         </div>
@@ -126,7 +126,7 @@
                     </div>
                     <div class="flex items-center gap-2 text-zinc-400 text-sm mt-1">
                         <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span>
+                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span> • <span id="syncStatus" class="text-xs text-emerald-400 flex items-center gap-1"><i data-lucide="wifi" class="w-3 h-3"></i>Synced</span>
                     </div>
                 </div>
             </div>
@@ -242,8 +242,46 @@
                 { id: 2, time: '12:00:05', type: 'INFO', msg: 'Loading properties...' },
                 { id: 3, time: '12:01:12', type: 'JOIN', msg: 'Player "Steve" joined the game' }
             ],
-            editingId: null
+            editingId: null,
+            syncEnabled: true
         };
+
+        // Broadcast Channel API for real-time sync across tabs/windows
+        let broadcastChannel = null;
+
+        function initBroadcastChannel() {
+            if ('BroadcastChannel' in window) {
+                try {
+                    broadcastChannel = new BroadcastChannel('minecraft-dashboard');
+                    broadcastChannel.onmessage = (event) => {
+                        const { type, data } = event.data;
+                        if (type === 'UPDATE_SERVER_INFO') {
+                            // Update state without triggering re-render to avoid conflicts
+                            state.serverName = data.serverName;
+                            state.serverPort = data.serverPort;
+                            updatePublicServerInfo();
+                            updateServerStatusUI();
+                        } else if (type === 'UPDATE_HEADER') {
+                            document.getElementById('headerServerName').innerText = data.serverName;
+                        }
+                    };
+                    document.getElementById('syncStatus').innerHTML = '<i data-lucide="wifi" class="w-3 h-3"></i>Synced';
+                    lucide.createIcons();
+                } catch (e) {
+                    console.log('BroadcastChannel not available, using localStorage only');
+                }
+            }
+        }
+
+        function broadcastUpdate(type, data) {
+            if (broadcastChannel) {
+                try {
+                    broadcastChannel.postMessage({ type, data });
+                } catch (e) {
+                    console.error('Broadcast failed:', e);
+                }
+            }
+        }
 
         // LocalStorage Management
         function saveLoginState() {
@@ -272,6 +310,7 @@
         }
 
         function init() {
+            initBroadcastChannel();
             loadLoginState();
             lucide.createIcons();
             renderAuth();
@@ -579,12 +618,15 @@
             state.serverName = val;
             document.getElementById('headerServerName').innerText = val;
             updatePublicServerInfo();
+            broadcastUpdate('UPDATE_SERVER_INFO', { serverName: val, serverPort: state.serverPort });
+            broadcastUpdate('UPDATE_HEADER', { serverName: val });
         }
 
         function updateServerPort(val) {
             state.serverPort = val;
             updateServerStatusUI();
             updatePublicServerInfo();
+            broadcastUpdate('UPDATE_SERVER_INFO', { serverName: state.serverName, serverPort: val });
         }
 
         // Utilities
