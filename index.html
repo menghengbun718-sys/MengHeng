@@ -1,307 +1,536 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Server-Panel | Management Portal</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap');
-        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #f8fafc;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-overflow-scrolling: touch;
+            background-color: #09090b;
+            color: #f4f4f5;
         }
 
-        .font-mono {
-            font-family: 'JetBrains+Mono', monospace;
+        /* Removing numeric spinners for the port input */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
         }
 
-        .glass-card {
-            background: #0f172a;
-            border: 1px solid #1e293b;
-            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.5);
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
         }
 
-        .btn-tap {
-            transition: transform 0.1s ease, background-color 0.2s;
-        }
-        .btn-tap:active {
-            transform: scale(0.96);
-        }
-
-        #toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #3b82f6;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 100px;
-            font-size: 0.875rem;
-            font-weight: 700;
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
-            z-index: 1000;
-            white-space: nowrap;
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(39, 39, 42, 0.8);
         }
 
-        #toast.active {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
-        .hidden { display: none; }
-
-        .edit-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 10px 16px;
-            width: 100%;
-            color: white;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .edit-input:focus {
-            border-color: #3b82f6;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="selection:bg-emerald-500/30 overflow-x-hidden min-h-screen">
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center px-6 animate-in fade-in duration-500">
-        <div class="mb-10 text-center">
-            <div class="w-20 h-20 bg-green-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/40 mx-auto mb-6">
-                <i data-lucide="server" class="text-white w-10 h-10"></i>
-            </div>
-            <h1 class="text-4xl font-black tracking-tight mb-2 uppercase">Server-Panel</h1>
-            <p class="text-slate-500 text-xs font-black tracking-[0.3em] uppercase">Public Access Mode</p>
-        </div>
-
-        <div class="w-full max-w-sm glass-card rounded-[32px] p-8">
-            <h2 class="text-xl font-bold mb-8">Your name</h2>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3 block">UserNAME</label>
-                    <div class="relative">
-                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                        <input type="text" id="username" placeholder="Write your name..." 
-                            class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 transition-colors">
-                    </div>
-                </div>
-
-                <button onclick="handleLogin()" class="btn-tap w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/20">
-                    <span>Login</span>
-                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-8 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Server Login</h2>
+                <button onclick="closeModal('loginModal')" class="text-zinc-500 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            
-            <p class="mt-6 text-center text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                
-            </p>
+            <p class="text-zinc-400 text-sm mb-6">Enter your name. Log in as <span class="text-emerald-400 font-bold">Your name </span> to see and manage name server and port.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Your Name</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4"></i>
+                        <input id="loginInput" type="text" placeholder="e.g. Your name " class="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all">
+                    </div>
+                </div>
+                <button onclick="handleLoginSubmit()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-95">
+                    Sign In
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="dashboard-screen" class="hidden">
-        <nav class="sticky top-0 w-full glass-card border-x-0 border-t-0 z-50 px-4 py-4 backdrop-blur-md bg-opacity-80">
-            <div class="max-w-2xl mx-auto flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-900/20">
-                        <i data-lucide="server" class="text-white w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-extrabold text-base tracking-tight leading-none">Server-Panel</h1>
-                        <span id="display-role" class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Administrator</span>
-                    </div>
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-8 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-2 text-blue-400">
+                    <i data-lucide="info" class="w-6 h-6"></i>
+                    <h2 class="text-xl font-bold text-white">About This Web</h2>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="master-edit-btn" onclick="toggleEditMode()" class="hidden p-2.5 bg-slate-800 rounded-xl text-blue-400 border border-slate-700 btn-tap">
-                        <i data-lucide="edit-3" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="handleLogout()" class="p-2.5 bg-slate-800 rounded-xl text-red-400 border border-slate-700 btn-tap">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
-                </div>
+                <button onclick="closeModal('aboutModal')" class="text-zinc-500 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-        </nav>
-
-        <main class="max-w-2xl mx-auto px-4 py-6 md:py-10">
-            <!-- PROFILE HEADER -->
-            <header class="mb-8 flex justify-between items-start">
-                <div>
-                    <h2 id="display-name" class="text-2xl md:text-3xl font-extrabold text-white mb-1">User</h2>
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <p id="display-server-text" class="text-slate-400 text-xs font-semibold tracking-wide uppercase italic">Survival World One • 1.20.1</p>
+            <div class="space-y-6 text-zinc-300 text-sm leading-relaxed">
+                <p>This is a high-performance <span class="text-emerald-400 font-bold">Minecraft Server Management Dashboard</span>. It provides real-time control and monitoring for dedicated instances.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                        <h4 class="text-emerald-400 font-bold mb-2 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> Owner Security</h4>
+                        <p class="text-xs text-zinc-500">Only authorized owners can access the Live Console and modify core server configuration.</p>
+                    </div>
+                    <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                        <h4 class="text-blue-400 font-bold mb-2 flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4"></i> 24/7 Hosting</h4>
+                        <p class="text-xs text-zinc-500">Designed for persistent servers with high-availability infrastructure and uptime monitoring.</p>
                     </div>
                 </div>
-            </header>
-
-            <!-- CREATOR EDIT PANEL (Only for Bun MengHeng) -->
-            <div id="edit-panel" class="hidden glass-card rounded-2xl p-6 mb-8 border-blue-500/30 bg-blue-500/5">
-                <div class="flex items-center gap-2 mb-4">
-                    <i data-lucide="shield-check" class="text-blue-500 w-5 h-5"></i>
-                    <h3 class="text-sm font-bold uppercase tracking-widest text-blue-400">Creator Control Panel</h3>
-                </div>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Server IP</label>
-                            <input type="text" id="edit-ip-input" class="edit-input" value="mc.example-server.com:25565">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Software</label>
-                            <input type="text" id="edit-software-input" class="edit-input" value="Paper 1.20.1">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Uptime</label>
-                        <input type="text" id="edit-uptime-input" class="edit-input" value="2d 14h 05m">
-                    </div>
-                    <div class="flex gap-2 pt-2">
-                        <button onclick="saveChanges()" class="flex-1 bg-blue-600 py-3 rounded-xl font-bold btn-tap text-sm">Update Dashboard</button>
-                        <button onclick="toggleEditMode()" class="px-6 bg-slate-800 py-3 rounded-xl font-bold btn-tap text-sm text-slate-400">Cancel</button>
-                    </div>
-                </div>
+                <div class="pt-4 border-t border-zinc-800 text-[10px] text-zinc-500 italic">Version 1.2.0 • Optimized for all screen sizes</div>
             </div>
-
-            <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8">
-                <div class="flex items-center gap-2 mb-8 text-slate-500">
-                    <i data-lucide="wifi" class="w-4 h-4 text-blue-500"></i>
-                    <h3 class="text-[11px] font-black uppercase tracking-[0.2em]">Live Connection</h3>
-                </div>
-
-                <div class="space-y-8">
-                    <!-- SERVER IP -->
-                    <div class="flex flex-col">
-                        <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3">Server Address</label>
-                        <div class="flex items-center gap-4">
-                            <button onclick="copyData(document.getElementById('display-ip').innerText)" class="btn-tap shrink-0 w-12 h-12 bg-slate-800 text-blue-400 rounded-xl border border-slate-700 flex items-center justify-center">
-                                <i data-lucide="copy" class="w-5 h-5"></i>
-                            </button>
-                            <span id="display-ip" class="font-mono text-base md:text-xl text-blue-300 break-all leading-tight font-bold">mc.example-server.com:25565</span>
-                        </div>
-                    </div>
-
-                    <!-- SOFTWARE -->
-                    <div class="flex flex-col">
-                        <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3">Software / Engine</label>
-                        <div class="flex items-center gap-4">
-                            <button onclick="copyData(document.getElementById('display-software').innerText)" class="btn-tap shrink-0 w-12 h-12 bg-slate-800 text-blue-400 rounded-xl border border-slate-700 flex items-center justify-center">
-                                <i data-lucide="copy" class="w-5 h-5"></i>
-                            </button>
-                            <span id="display-software" class="text-lg md:text-xl font-bold text-slate-100">Paper 1.20.1</span>
-                        </div>
-                    </div>
-
-                    <!-- UPTIME -->
-                    <div class="flex flex-col">
-                        <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3">Session Uptime</label>
-                        <div class="flex items-center gap-4">
-                            <button onclick="copyData(document.getElementById('display-uptime').innerText)" class="btn-tap shrink-0 w-12 h-12 bg-slate-800 text-blue-400 rounded-xl border border-slate-700 flex items-center justify-center">
-                                <i data-lucide="copy" class="w-5 h-5"></i>
-                            </button>
-                            <span id="display-uptime" class="text-lg md:text-xl font-bold text-slate-100">2d 14h 05m</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+            <button onclick="closeModal('aboutModal')" class="w-full mt-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all">Close</button>
+        </div>
     </div>
 
-    <div id="toast">COPIED TO CLIPBOARD</div>
+    <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
+        <header class="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-6 border-b border-zinc-800/50 pb-6">
+            <div class="flex items-center gap-4">
+                <div id="statusIconBox" class="p-3 rounded-2xl shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-400/20">
+                    <i data-lucide="server" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 id="headerServerName" class="text-2xl font-bold tracking-tight">Ender's Realm</h1>
+                        <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-2.5 h-2.5 animate-spin"></i> 24/7 Online
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-zinc-400 text-sm mt-1">
+                        <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="statusText">Running</span> • IP: play.mcsrv.io:<span id="headerPort" class="font-mono cursor-pointer hover:text-emerald-400 transition-colors" onclick="copyValue('25565', 'Port')">25565</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="openModal('aboutModal')" class="flex items-center justify-center w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors" title="About">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </button>
+
+                <div id="authSection" class="flex items-center"></div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="glass-panel p-5 rounded-2xl group transition-all hover:border-zinc-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-zinc-950 rounded-lg text-blue-400 group-hover:scale-110 transition-transform"><i data-lucide="users" class="w-4 h-4"></i></div>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">Players</span>
+                </div>
+                <div id="playerCount" class="text-2xl font-bold">12/50</div>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl group transition-all hover:border-zinc-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-zinc-950 rounded-lg text-purple-400 group-hover:scale-110 transition-transform"><i data-lucide="globe" class="w-4 h-4"></i></div>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">Availability</span>
+                </div>
+                <div class="text-2xl font-bold">24/7 Active</div>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl group transition-all hover:border-zinc-700">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-zinc-950 rounded-lg text-orange-400 group-hover:scale-110 transition-transform"><i data-lucide="shield-check" class="w-4 h-4"></i></div>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">Version</span>
+                </div>
+                <div class="text-2xl font-bold">1.20.4 Paper</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <section class="lg:col-span-1">
+                <div id="configPanel" class="glass-panel rounded-2xl p-6 transition-all duration-300 h-full">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-2">
+                            <i id="configIcon" data-lucide="settings" class="w-5 h-5 text-zinc-400"></i>
+                            <h2 class="font-semibold text-sm">Configuration</h2>
+                        </div>
+                        <div id="lockBadge"></div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Server Name</label>
+                            <input id="serverNameInput" type="text" value="Ender's Realm" oninput="updateServerName(this.value)" readonly class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Port Number</label>
+                            <div class="relative">
+                                <input id="serverPortInput" type="number" value="25565" oninput="updateServerPort(this.value)" readonly class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all pr-12">
+                                <button onclick="copyValue(document.getElementById('serverPortInput').value, 'Port')" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-zinc-500 hover:text-emerald-400 transition-colors">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-zinc-800/50">
+                        <div class="flex items-center gap-2 text-zinc-500 mb-4">
+                            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                            <span class="text-xs font-bold uppercase">Uptime Info</span>
+                        </div>
+                        <div class="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800/50">
+                            <p class="text-[10px] text-zinc-500 leading-relaxed">Server is currently running on high-performance node #MC-042. Redundant network routes enabled for 24/7 connectivity.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-2 min-h-[500px]" id="consoleContainer">
+                <!-- Content dynamically injected via renderConsole() -->
+            </section>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-900 border border-emerald-500/50 text-emerald-400 rounded-full shadow-2xl transition-all opacity-0 translate-y-10 pointer-events-none z-[100] flex items-center gap-3">
+        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+        <span id="toastMsg" class="font-bold text-sm">Action Successful</span>
+    </div>
 
     <script>
-        lucide.createIcons();
+        let state = {
+            isLoggedIn: false,
+            userName: 'Guest',
+            isOwner: false,
+            isOnline: true,
+            serverName: "Ender's Realm",
+            serverPort: "25565",
+            playerCount: 12,
+            maxPlayers: 50,
+            logs: [
+                { id: 1, time: '12:00:01', type: 'INFO', msg: 'Starting Minecraft server version 1.20.4' },
+                { id: 2, time: '12:00:05', type: 'INFO', msg: 'Loading properties...' },
+                { id: 3, time: '12:01:12', type: 'JOIN', msg: 'Player "Steve" joined the game' }
+            ],
+            editingId: null
+        };
 
-        function handleLogin() {
-            const user = document.getElementById('username').value.trim();
+        function init() {
+            lucide.createIcons();
+            renderAuth();
+            renderConsole();
+            renderConfig();
+            updateServerStatusUI();
+        }
+
+        // Modals
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'loginModal') document.getElementById('loginInput').focus();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Auth Logic
+        function handleLoginSubmit() {
+            const val = document.getElementById('loginInput').value.trim();
+            if (!val) return;
+
+            state.isLoggedIn = true;
+            state.userName = val;
+            state.isOwner = val.toLowerCase() === 'mengheng';
             
-            if (user !== "") {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                
-                document.getElementById('display-name').innerText = user;
-                
-                const roleSpan = document.getElementById('display-role');
-                const editBtn = document.getElementById('master-edit-btn');
-
-                // Privilege check
-                if (user === "Bun MengHeng" || user === "Sinlong" || user === "Admin") {
-                    roleSpan.innerText = "System Creator";
-                    roleSpan.classList.replace('text-slate-500', 'text-blue-400');
-                    editBtn.classList.remove('hidden');
-                    showToast("Access Granted: Creator Mode");
-                } else {
-                    roleSpan.innerText = "Guest User";
-                    editBtn.classList.add('hidden');
-                    showToast("Welcome back, " + user);
-                }
-            } else {
-                showToast("Please enter a name to login");
-            }
+            addLog('INFO', `User "${val}" logged in.`);
+            closeModal('loginModal');
+            renderAuth();
+            renderConsole();
+            renderConfig();
+            showToast(`Logged in as ${val}`);
         }
-               
+
         function handleLogout() {
-            document.getElementById('dashboard-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('username').value = "";
-            document.getElementById('edit-panel').classList.add('hidden');
+            addLog('INFO', `User "${state.userName}" logged out.`);
+            state.isLoggedIn = false;
+            state.userName = 'Guest';
+            state.isOwner = false;
+            
+            renderAuth();
+            renderConsole();
+            renderConfig();
+            showToast("Logged out successfully");
         }
 
-        function toggleEditMode() {
-            const panel = document.getElementById('edit-panel');
-            panel.classList.toggle('hidden');
+        function renderAuth() {
+            const section = document.getElementById('authSection');
+            if (state.isLoggedIn) {
+                section.innerHTML = `
+                    <div class="flex items-center gap-3 bg-zinc-900/50 p-1 pr-4 rounded-full border ${state.isOwner ? 'border-emerald-500/50 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]' : 'border-zinc-800'} animate-fade-in">
+                        <div class="w-8 h-8 rounded-full shrink-0 ${state.isOwner ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'} flex items-center justify-center uppercase font-bold text-xs relative">
+                            ${state.userName.charAt(0)}
+                            ${state.isOwner ? '<i data-lucide="crown" class="w-2.5 h-2.5 absolute -top-1 -right-1 text-yellow-500 fill-yellow-500"></i>' : ''}
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-sm font-bold leading-none truncate">${state.userName}</span>
+                            ${state.isOwner ? '<span class="text-[10px] text-emerald-400 font-medium uppercase tracking-wide mt-0.5">Owner</span>' : ''}
+                        </div>
+                        <button onclick="handleLogout()" class="p-1.5 text-zinc-500 hover:text-red-400 transition-colors ml-2"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                    </div>
+                `;
+            } else {
+                section.innerHTML = `
+                    <button onclick="openModal('loginModal')" class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-500 transition-all shadow-lg active:scale-95">
+                        <i data-lucide="log-in" class="w-4 h-4"></i> Login
+                    </button>
+                `;
+            }
             lucide.createIcons();
         }
 
-        function saveChanges() {
-            const newIp = document.getElementById('edit-ip-input').value;
-            const newSoftware = document.getElementById('edit-software-input').value;
-            const newUptime = document.getElementById('edit-uptime-input').value;
+        function renderConsole() {
+            const container = document.getElementById('consoleContainer');
             
-            document.getElementById('display-ip').innerText = newIp;
-            document.getElementById('display-software').innerText = newSoftware;
-            document.getElementById('display-uptime').innerText = newUptime;
-            
-            // Also update the sub-header
-            document.getElementById('display-server-text').innerText = "Active Server • " + newSoftware;
-            
-            toggleEditMode();
-            showToast("Dashboard Updated by Creator");
+            if (!state.isOwner) {
+                // RESTRICTED VIEW FOR REGULAR USERS
+                container.innerHTML = `
+                    <div class="bg-zinc-900/30 border border-dashed border-zinc-800 rounded-2xl flex flex-col h-full items-center justify-center p-8 md:p-12 text-center animate-fade-in">
+                        <div class="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800 shadow-xl shrink-0">
+                            <i data-lucide="eye-off" class="w-8 h-8 text-zinc-700"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-zinc-100 mb-2">Live Console Locked</h3>
+                        <p class="text-sm text-zinc-500 max-w-xs mx-auto mb-8">
+                            Only the server owner (<span class="text-emerald-500 font-medium">Owner</span>) has permission to view live logs and execute commands.
+                        </p>
+                        ${!state.isLoggedIn ? `
+                            <button onclick="openModal('loginModal')" class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-all border border-zinc-700 shadow-lg active:scale-95">
+                                Login as Owner
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                // FULL CONSOLE ACCESS FOR OWNER
+                container.innerHTML = `
+                    <div class="glass-panel rounded-2xl flex flex-col h-full overflow-hidden animate-fade-in">
+                        <div class="p-4 border-b border-zinc-800 bg-zinc-900/80 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="terminal" class="w-4.5 h-4.5 text-emerald-400"></i>
+                                <h2 class="font-semibold text-sm">Live Console</h2>
+                                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-bold uppercase">Owner Access</span>
+                            </div>
+                            <button onclick="clearLogs()" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-1.5 rounded transition-colors">Clear</button>
+                        </div>
+                        
+                        <div id="logList" class="p-4 font-mono text-xs overflow-y-auto flex-1 space-y-2 max-h-[400px] custom-scrollbar"></div>
+
+                        <div class="p-4 border-t border-zinc-800 bg-zinc-950/50">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono">></span>
+                                <input id="commandInput" type="text" placeholder="Enter server command..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 font-mono text-sm" onkeydown="handleCommand(event)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                renderLogs();
+            }
+            lucide.createIcons();
         }
 
-        function copyData(text) {
-            const temp = document.createElement('textarea');
-            temp.value = text;
-            temp.style.position = 'fixed';
-            temp.style.left = '-9999px';
-            document.body.appendChild(temp);
-            temp.select();
+        function renderLogs() {
+            const list = document.getElementById('logList');
+            if (!list) return;
+
+            list.innerHTML = state.logs.map(log => {
+                const colorClass = log.type === 'INFO' ? 'text-blue-400' : (log.type === 'WARN' ? 'text-yellow-500' : (log.type === 'JOIN' ? 'text-emerald-400' : 'text-red-400'));
+                
+                if (state.editingId === log.id) {
+                    return `
+                        <div class="flex gap-3 bg-zinc-800/50 ring-1 ring-emerald-500/30 p-1.5 rounded items-center">
+                            <span class="text-zinc-600 shrink-0">[${log.time}]</span>
+                            <span class="font-bold ${colorClass} shrink-0">[${log.type}]</span>
+                            <input id="editInput" value="${log.msg}" class="flex-1 bg-zinc-950 border border-emerald-500/50 rounded px-2 py-0.5 outline-none text-zinc-100" onkeydown="handleEditKey(event, ${log.id})">
+                            <button onclick="saveEdit(${log.id})" class="text-emerald-400 hover:text-emerald-300"><i data-lucide="save" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="cancelEdit()" class="text-zinc-500"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="flex gap-3 group relative hover:bg-zinc-800/30 p-1.5 rounded transition-colors">
+                        <span class="text-zinc-600 shrink-0">[${log.time}]</span>
+                        <span class="font-bold whitespace-nowrap shrink-0 ${colorClass}">[${log.type}]</span>
+                        <span class="text-zinc-300 break-all pr-16">${log.msg}</span>
+                        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick="startEdit(${log.id}, '${log.msg.replace(/'/g, "\\'")}')" class="text-zinc-500 hover:text-emerald-400 p-1"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="deleteLog(${log.id})" class="text-zinc-500 hover:text-red-400 p-1"><i data-lucide="zap" class="w-3.5 h-3.5 rotate-45"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // Log Management
+        function addLog(type, msg) {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            state.logs.push({ id: Date.now(), time, type, msg });
+            if (state.isOwner) renderLogs();
+        }
+
+        function clearLogs() {
+            state.logs = [];
+            renderLogs();
+            showToast("Console Cleared");
+        }
+
+        function deleteLog(id) {
+            state.logs = state.logs.filter(l => l.id !== id);
+            renderLogs();
+        }
+
+        function startEdit(id, msg) {
+            state.editingId = id;
+            renderLogs();
+            setTimeout(() => document.getElementById('editInput').focus(), 50);
+        }
+
+        function saveEdit(id) {
+            const val = document.getElementById('editInput').value;
+            state.logs = state.logs.map(l => l.id === id ? { ...l, msg: val } : l);
+            state.editingId = null;
+            renderLogs();
+        }
+
+        function cancelEdit() {
+            state.editingId = null;
+            renderLogs();
+        }
+
+        function handleEditKey(e, id) {
+            if (e.key === 'Enter') saveEdit(id);
+            if (e.key === 'Escape') cancelEdit();
+        }
+
+        function handleCommand(e) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                if (!state.isOnline) {
+                    addLog('ERROR', 'Cannot execute command while server is offline.');
+                } else {
+                    addLog('INFO', `[${state.userName}] Executing: ${e.target.value}`);
+                }
+                e.target.value = '';
+            }
+        }
+
+        // Configuration Panel UI
+        function renderConfig() {
+            const nameInput = document.getElementById('serverNameInput');
+            const portInput = document.getElementById('serverPortInput');
+            const lockBadge = document.getElementById('lockBadge');
+            const configIcon = document.getElementById('configIcon');
+            const panel = document.getElementById('configPanel');
+
+            if (state.isOwner) {
+                nameInput.readOnly = false;
+                nameInput.className = "w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-zinc-100";
+                portInput.readOnly = false;
+                portInput.className = "w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-zinc-100 pr-12";
+                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded"><i data-lucide="unlock" class="w-2.5 h-2.5"></i> Editable</span>`;
+                configIcon.classList.add('text-emerald-400');
+                panel.classList.add('border-emerald-500/50');
+            } else {
+                nameInput.readOnly = true;
+                nameInput.className = "w-full bg-zinc-950/50 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default";
+                portInput.readOnly = true;
+                portInput.className = "w-full bg-zinc-950/50 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default pr-12";
+                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider bg-zinc-950 px-2 py-1 rounded"><i data-lucide="lock" class="w-2.5 h-2.5"></i> Locked</span>`;
+                configIcon.classList.remove('text-emerald-400');
+                panel.classList.remove('border-emerald-500/50');
+            }
+            lucide.createIcons();
+        }
+
+        // Server Status UI
+        function toggleServer() {
+            state.isOnline = !state.isOnline;
+            addLog(state.isOnline ? 'INFO' : 'WARN', `Server ${state.isOnline ? 'started' : 'stopped'} by ${state.userName}.`);
+            if (!state.isOnline) state.playerCount = 0;
+            else state.playerCount = 12;
+            
+            updateServerStatusUI();
+            document.getElementById('playerCount').innerText = `${state.playerCount}/${state.maxPlayers}`;
+            showToast(state.isOnline ? "Server Starting..." : "Server Stopping...");
+        }
+
+        function updateServerStatusUI() {
+            const iconBox = document.getElementById('statusIconBox');
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+
+            if (state.isOnline) {
+                iconBox.className = "p-3 rounded-2xl shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-400/20";
+                indicator.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                statusText.innerText = "Running";
+            } else {
+                iconBox.className = "p-3 rounded-2xl shrink-0 bg-red-500/10 text-red-400 border border-red-500/20";
+                indicator.className = "w-2 h-2 rounded-full bg-red-500";
+                statusText.innerText = "Offline";
+            }
+        }
+
+        function updateServerName(val) {
+            state.serverName = val;
+            document.getElementById('headerServerName').innerText = val;
+        }
+
+        function updateServerPort(val) {
+            state.serverPort = val;
+            document.getElementById('headerPort').innerText = val;
+        }
+
+        // Utilities
+        function copyValue(val, label) {
+            const el = document.createElement('textarea');
+            el.value = val;
+            document.body.appendChild(el);
+            el.select();
             document.execCommand('copy');
-            document.body.removeChild(temp);
-            showToast("COPIED TO CLIPBOARD");
+            document.body.removeChild(el);
+            showToast(`${label} Copied!`);
         }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('active');
-            if (window.navigator.vibrate) window.navigator.vibrate(20);
-            setTimeout(() => toast.classList.remove('active'), 2000);
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            }, 2500);
         }
+
+        window.onload = init;
     </script>
 </body>
 </html>
