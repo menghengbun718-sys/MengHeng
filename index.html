@@ -65,7 +65,7 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <p class="text-zinc-400 text-sm mb-6">Enter your name. Log in as <span class="text-emerald-400 font-bold">Your name </span> to see and manage name server and port.</p>
+            <p class="text-zinc-400 text-sm mb-6">Enter your name. Log in as <span class="text-emerald-400 font-bold">mengheng</span> to see and manage server settings.</p>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Your Name</label>
@@ -126,7 +126,7 @@
                     </div>
                     <div class="flex items-center gap-2 text-zinc-400 text-sm mt-1">
                         <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="statusText">Running</span> • IP: play.mcsrv.io:<span id="headerPort" class="font-mono cursor-pointer hover:text-emerald-400 transition-colors" onclick="copyValue(document.getElementById('headerPort').innerText, 'Port')">25565</span>
+                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span>
                     </div>
                 </div>
             </div>
@@ -176,20 +176,8 @@
                         <div id="lockBadge"></div>
                     </div>
                     
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Server Name</label>
-                            <input id="serverNameInput" type="text" value="Ender's Realm" oninput="updateServerName(this.value)" readonly class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Port Number</label>
-                            <div class="relative">
-                                <input id="serverPortInput" type="number" value="25565" oninput="updateServerPort(this.value)" readonly class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default pr-12">
-                                <button onclick="copyValue(document.getElementById('serverPortInput').value, 'Port')" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-zinc-500 hover:text-emerald-400 transition-colors">
-                                    <i data-lucide="copy" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div id="configContent" class="space-y-4">
+                        <!-- Content will be rendered based on user role -->
                     </div>
                     
                     <div class="mt-8 pt-6 border-t border-zinc-800/50">
@@ -294,6 +282,7 @@
             renderAuth();
             renderConsole();
             renderConfig();
+            updateServerStatusUI();
             showToast(`Logged in as ${val}`);
         }
 
@@ -307,6 +296,7 @@
             renderAuth();
             renderConsole();
             renderConfig();
+            updateServerStatusUI();
             showToast("Logged out successfully");
         }
 
@@ -348,7 +338,7 @@
                         </div>
                         <h3 class="text-lg font-bold text-zinc-100 mb-2">Live Console Locked</h3>
                         <p class="text-sm text-zinc-500 max-w-xs mx-auto mb-8">
-                            Only the server owner (<span class="text-emerald-500 font-medium">Owner</span>) has permission to view live logs and execute commands.
+                            Only the server owner (<span class="text-emerald-500 font-medium">mengheng</span>) has permission to view live logs and execute commands.
                         </p>
                         ${!state.isLoggedIn ? `
                             <button onclick="openModal('loginModal')" class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-all border border-zinc-700">
@@ -474,25 +464,44 @@
 
         // Configuration Panel UI
         function renderConfig() {
-            const nameInput = document.getElementById('serverNameInput');
-            const portInput = document.getElementById('serverPortInput');
+            const configContent = document.getElementById('configContent');
             const lockBadge = document.getElementById('lockBadge');
             const configIcon = document.getElementById('configIcon');
             const panel = document.getElementById('configPanel');
 
             if (state.isOwner) {
-                nameInput.readOnly = false;
-                nameInput.className = "w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all";
-                portInput.readOnly = false;
-                portInput.className = "w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all";
+                // OWNER VIEW - Show editable fields
+                configContent.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Server Name</label>
+                        <input id="serverNameInput" type="text" value="${state.serverName}" oninput="updateServerName(this.value)" class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">Port Number</label>
+                        <div class="relative">
+                            <input id="serverPortInput" type="number" value="${state.serverPort}" oninput="updateServerPort(this.value)" class="w-full bg-zinc-950 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all">
+                            <button onclick="copyValue(document.getElementById('serverPortInput').value, 'Port')" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-zinc-500 hover:text-emerald-400 transition-colors">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
                 lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded"><i data-lucide="unlock" class="w-3 h-3"></i>Unlocked</span>`;
                 configIcon.classList.add('text-emerald-400');
                 panel.classList.add('border-emerald-500/50');
             } else {
-                nameInput.readOnly = true;
-                nameInput.className = "w-full bg-zinc-950/50 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default";
-                portInput.readOnly = true;
-                portInput.className = "w-full bg-zinc-950/50 border border-zinc-800 text-sm rounded-lg px-4 py-2.5 outline-none transition-all text-zinc-500 cursor-default pr-12";
+                // REGULAR USER VIEW - Show locked message
+                configContent.innerHTML = `
+                    <div class="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800/50 text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="p-2 bg-zinc-800 rounded-lg text-zinc-600">
+                                <i data-lucide="lock" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-zinc-400">Server settings are hidden from non-owner users.</p>
+                        <p class="text-[10px] text-zinc-500 mt-2">Login as <span class="text-emerald-400 font-semibold">mengheng</span> to view and edit.</p>
+                    </div>
+                `;
                 lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider bg-zinc-950 px-2 py-1 rounded"><i data-lucide="lock" class="w-3 h-3"></i>Locked</span>`;
                 configIcon.classList.remove('text-emerald-400');
                 panel.classList.remove('border-emerald-500/50');
@@ -501,6 +510,30 @@
         }
 
         // Server Status UI
+        function updateServerStatusUI() {
+            const iconBox = document.getElementById('statusIconBox');
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const ipDisplay = document.getElementById('ipDisplay');
+
+            if (state.isOnline) {
+                iconBox.className = "p-3 rounded-2xl shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-400/20";
+                indicator.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                statusText.innerText = "Running";
+            } else {
+                iconBox.className = "p-3 rounded-2xl shrink-0 bg-red-500/10 text-red-400 border border-red-500/20";
+                indicator.className = "w-2 h-2 rounded-full bg-red-500";
+                statusText.innerText = "Offline";
+            }
+
+            // Show IP and port only to owner
+            if (state.isOwner) {
+                ipDisplay.innerHTML = `IP: play.mcsrv.io:<span class="font-mono cursor-pointer hover:text-emerald-400 transition-colors" onclick="copyValue('${state.serverPort}', 'Port')">${state.serverPort}</span>`;
+            } else {
+                ipDisplay.textContent = "IP: Hidden (Login Required)";
+            }
+        }
+
         function toggleServer() {
             state.isOnline = !state.isOnline;
             addLog(state.isOnline ? 'INFO' : 'WARN', `Server ${state.isOnline ? 'started' : 'stopped'} by ${state.userName}.`);
@@ -512,22 +545,6 @@
             showToast(state.isOnline ? "Server Starting..." : "Server Stopping...");
         }
 
-        function updateServerStatusUI() {
-            const iconBox = document.getElementById('statusIconBox');
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-
-            if (state.isOnline) {
-                iconBox.className = "p-3 rounded-2xl shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-400/20";
-                indicator.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                statusText.innerText = "Running";
-            } else {
-                iconBox.className = "p-3 rounded-2xl shrink-0 bg-red-500/10 text-red-400 border border-red-500/20";
-                indicator.className = "w-2 h-2 rounded-full bg-red-500";
-                statusText.innerText = "Offline";
-            }
-        }
-
         function updateServerName(val) {
             state.serverName = val;
             document.getElementById('headerServerName').innerText = val;
@@ -535,7 +552,7 @@
 
         function updateServerPort(val) {
             state.serverPort = val;
-            document.getElementById('headerPort').innerText = val;
+            updateServerStatusUI();
         }
 
         // Utilities
