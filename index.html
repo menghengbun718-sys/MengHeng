@@ -56,31 +56,6 @@
 </head>
 <body class="selection:bg-emerald-500/30 overflow-x-hidden min-h-screen">
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-8 shadow-2xl animate-fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold">Server Login</h2>
-                <button onclick="closeModal('loginModal')" class="text-zinc-500 hover:text-white transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <p class="text-zinc-400 text-sm mb-6">Enter your name. Log in as <span class="text-emerald-400 font-bold">mengheng</span> to see and manage server settings.</p>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Your Name</label>
-                    <div class="relative">
-                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4"></i>
-                        <input id="loginInput" type="text" placeholder="e.g. Your name " class="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-white">
-                    </div>
-                </div>
-                <button onclick="handleLoginSubmit()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-95">
-                    Sign In
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- About Modal -->
     <div id="aboutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-8 shadow-2xl animate-fade-in">
@@ -94,7 +69,7 @@
                 </button>
             </div>
             <div class="space-y-6 text-zinc-300 text-sm leading-relaxed">
-                <p>This is a high-performance <span class="text-emerald-400 font-bold">Minecraft Server Management Dashboard</span>. It provides real-time control and monitoring for dedicated instances.</p>
+                <p>This is a high-performance <span class="text-emerald-400 font-bold">Minecraft Server Management Dashboard</span>. It provides real-time control and monitoring for dedicated instance[...]
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800">
                         <h4 class="text-emerald-400 font-bold mb-2 flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> Owner Security</h4>
@@ -126,17 +101,15 @@
                     </div>
                     <div class="flex items-center gap-2 text-zinc-400 text-sm mt-1">
                         <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span> • <span id="syncStatus" class="text-xs text-emerald-400 flex items-center gap-1">Loading...</span>
+                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span> • <span id="syncStatus" class="text-xs text-emerald-400 flex items-cente[...]
                     </div>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-                <button onclick="openModal('aboutModal')" class="flex items-center justify-center w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors">
+                <button onclick="openModal('aboutModal')" class="flex items-center justify-center w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:tex[...]
                     <i data-lucide="info" class="w-5 h-5"></i>
                 </button>
-
-                <div id="authSection" class="flex items-center"></div>
             </div>
         </header>
 
@@ -214,7 +187,7 @@
                             <span class="text-xs font-bold uppercase">Uptime Info</span>
                         </div>
                         <div class="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800/50">
-                            <p class="text-[10px] text-zinc-500 leading-relaxed">Server is currently running on high-performance node #MC-042. Redundant network routes enabled for 24/7 connectivity.</p>
+                            <p class="text-[10px] text-zinc-500 leading-relaxed">Server is currently running on high-performance node #MC-042. Redundant network routes enabled for 24/7 connectivi[...]
                         </div>
                     </div>
                 </div>
@@ -227,7 +200,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-900 border border-emerald-500/50 text-emerald-400 rounded-full shadow-2xl transition-all opacity-0 translate-y-10 pointer-events-none flex items-center gap-2">
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-900 border border-emerald-500/50 text-emerald-400 rounded-full shadow-2xl transition-all opacity-0 translate-[...]
         <i data-lucide="check-circle-2" class="w-4 h-4"></i>
         <span id="toastMsg" class="font-bold text-sm">Action Successful</span>
     </div>
@@ -318,7 +291,6 @@
             initBroadcastChannel();
             loadLoginState();
             lucide.createIcons();
-            renderAuth();
             renderConsole();
             renderConfig();
             updateServerStatusUI();
@@ -328,70 +300,10 @@
         // Modals
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
-            if (id === 'loginModal') document.getElementById('loginInput').focus();
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
-        }
-
-        // Auth Logic
-        function handleLoginSubmit() {
-            const val = document.getElementById('loginInput').value.trim();
-            if (!val) return;
-
-            state.isLoggedIn = true;
-            state.userName = val;
-            state.isOwner = val.toLowerCase() === 'mengheng';
-            
-            saveLoginState();
-            addLog('INFO', `User "${val}" logged in.`);
-            closeModal('loginModal');
-            renderAuth();
-            renderConsole();
-            renderConfig();
-            updateServerStatusUI();
-            showToast(`Logged in as ${val}`);
-        }
-
-        function handleLogout() {
-            addLog('INFO', `User "${state.userName}" logged out.`);
-            state.isLoggedIn = false;
-            state.userName = 'Guest';
-            state.isOwner = false;
-            
-            clearLoginState();
-            renderAuth();
-            renderConsole();
-            renderConfig();
-            updateServerStatusUI();
-            showToast("Logged out successfully");
-        }
-
-        function renderAuth() {
-            const section = document.getElementById('authSection');
-            if (state.isLoggedIn) {
-                section.innerHTML = `
-                    <div class="flex items-center gap-3 bg-zinc-900/50 p-1 pr-4 rounded-full border ${state.isOwner ? 'border-emerald-500/50 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]' : 'border-zinc-800'} transition-all">
-                        <div class="w-8 h-8 rounded-full shrink-0 ${state.isOwner ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'} flex items-center justify-center uppercase font-bold text-xs relative">
-                            ${state.userName.charAt(0)}
-                            ${state.isOwner ? '<i data-lucide="crown" class="w-2.5 h-2.5 absolute -top-1 -right-1 text-yellow-500 fill-yellow-500"></i>' : ''}
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="text-sm font-bold leading-none truncate">${state.userName}</span>
-                            ${state.isOwner ? '<span class="text-[10px] text-emerald-400 font-medium uppercase tracking-wide mt-0.5">Owner</span>' : ''}
-                        </div>
-                        <button onclick="handleLogout()" class="p-1.5 text-zinc-500 hover:text-red-400 transition-colors ml-2"><i data-lucide="log-out" class="w-4 h-4"></i></button>
-                    </div>
-                `;
-            } else {
-                section.innerHTML = `
-                    <button onclick="openModal('loginModal')" class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-500 transition-all shadow-lg active:scale-95">
-                        <i data-lucide="log-in" class="w-4 h-4"></i> Login
-                    </button>
-                `;
-            }
-            lucide.createIcons();
         }
 
         function renderConsole() {
@@ -408,11 +320,6 @@
                         <p class="text-sm text-zinc-500 max-w-xs mx-auto mb-8">
                             Only the server owner (<span class="text-emerald-500 font-medium">mengheng</span>) has permission to view live logs and execute commands.
                         </p>
-                        ${!state.isLoggedIn ? `
-                            <button onclick="openModal('loginModal')" class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-all border border-zinc-700">
-                                Login as Owner
-                            </button>
-                        ` : ''}
                     </div>
                 `;
             } else {
@@ -433,7 +340,7 @@
                         <div class="p-4 border-t border-zinc-800 bg-zinc-950/50">
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono">></span>
-                                <input id="commandInput" type="text" placeholder="Enter server command..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-white" onkeydown="handleCommand(event)">
+                                <input id="commandInput" type="text" placeholder="Enter server command..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:outline[...]
                             </div>
                         </div>
                     </div>
@@ -455,7 +362,7 @@
                         <div class="flex gap-3 bg-zinc-800/50 ring-1 ring-emerald-500/30 p-1.5 rounded items-center">
                             <span class="text-zinc-600 shrink-0">[${log.time}]</span>
                             <span class="font-bold ${colorClass} shrink-0">[${log.type}]</span>
-                            <input id="editInput" value="${log.msg}" class="flex-1 bg-zinc-950 border border-emerald-500/50 rounded px-2 py-0.5 outline-none text-zinc-100" onkeydown="handleEditKey(event, ${log.id})">
+                            <input id="editInput" value="${log.msg}" class="flex-1 bg-zinc-950 border border-emerald-500/50 rounded px-2 py-0.5 outline-none text-zinc-100" onkeydown="handleEditKe[...]
                             <button onclick="saveEdit(${log.id})" class="text-emerald-400 hover:text-emerald-300"><i data-lucide="save" class="w-3.5 h-3.5"></i></button>
                             <button onclick="cancelEdit()" class="text-zinc-500"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                         </div>
@@ -468,7 +375,7 @@
                         <span class="font-bold whitespace-nowrap shrink-0 ${colorClass}">[${log.type}]</span>
                         <span class="text-zinc-300 break-all pr-16">${log.msg}</span>
                         <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick="startEdit(${log.id}, '${log.msg.replace(/'/g, "\\'")}')" class="text-zinc-500 hover:text-emerald-400 p-1"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                            <button onclick="startEdit(${log.id}, '${log.msg.replace(/'/g, "\\'")}')" class="text-zinc-500 hover:text-emerald-400 p-1"><i data-lucide="pencil" class="w-3.5 h-3.5">[...]
                             <button onclick="deleteLog(${log.id})" class="text-zinc-500 hover:text-red-400 p-1"><i data-lucide="zap" class="w-3.5 h-3.5 rotate-45"></i></button>
                         </div>
                     </div>
@@ -548,7 +455,7 @@
                         <p class="text-xs text-emerald-300">You have full access to server console and logs. Server settings are displayed in the Server Info panel.</p>
                     </div>
                 `;
-                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded"><i data-lucide="unlock" class="w-3 h-3"></i>Unlocked</span>`;
+                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded"><i data-lucide="[...]
                 configIcon.classList.add('text-emerald-400');
                 panel.classList.add('border-emerald-500/50');
             } else {
@@ -564,7 +471,7 @@
                         <p class="text-[10px] text-zinc-500 mt-2">Login as <span class="text-emerald-400 font-semibold">mengheng</span> to view and edit.</p>
                     </div>
                 `;
-                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider bg-zinc-950 px-2 py-1 rounded"><i data-lucide="lock" class="w-3 h-3"></i>Locked</span>`;
+                lockBadge.innerHTML = `<span class="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider bg-zinc-950 px-2 py-1 rounded"><i data-lucide="lock" cla[...]
                 configIcon.classList.remove('text-emerald-400');
                 panel.classList.remove('border-emerald-500/50');
             }
@@ -590,7 +497,7 @@
 
             // Show IP and port only to owner
             if (state.isOwner) {
-                ipDisplay.innerHTML = `IP: play.mcsrv.io:<span class="font-mono cursor-pointer hover:text-emerald-400 transition-colors" onclick="copyValue('${state.serverPort}', 'Port')">${state.serverPort}</span>`;
+                ipDisplay.innerHTML = `IP: play.mcsrv.io:<span class="font-mono cursor-pointer hover:text-emerald-400 transition-colors" onclick="copyValue('${state.serverPort}', 'Port')">${state[...]
             } else {
                 ipDisplay.textContent = "IP: Hidden (Login Required)";
             }
