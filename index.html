@@ -71,7 +71,7 @@
                     <label class="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Your Name</label>
                     <div class="relative">
                         <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4"></i>
-                        <input id="loginInput" type="text" placeholder="e.g. Your name " class="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all">
+                        <input id="loginInput" type="text" placeholder="e.g. Your name " class="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-white">
                     </div>
                 </div>
                 <button onclick="handleLoginSubmit()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-95">
@@ -126,7 +126,7 @@
                     </div>
                     <div class="flex items-center gap-2 text-zinc-400 text-sm mt-1">
                         <span id="statusIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span> • <span id="syncStatus" class="text-xs text-emerald-400 flex items-center gap-1">Syncing</span>
+                        <span id="statusText">Running</span> • <span id="ipDisplay">IP: Hidden (Login Required)</span> • <span id="syncStatus" class="text-xs text-emerald-400 flex items-center gap-1">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -174,7 +174,12 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-zinc-950/50 p-4 rounded-lg border border-zinc-800/50">
                     <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5 font-semibold">Server Name</p>
-                    <p id="publicServerName" class="text-lg font-bold text-emerald-400">menghengdev.progamer.me</p>
+                    <div class="flex items-center gap-2">
+                        <p id="publicServerName" class="text-lg font-bold text-emerald-400">menghengdev.progamer.me</p>
+                        <button onclick="copyValue(document.getElementById('publicServerName').innerText, 'Server Name')" class="p-1.5 text-zinc-500 hover:text-emerald-400 transition-colors">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="bg-zinc-950/50 p-4 rounded-lg border border-zinc-800/50">
                     <p class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5 font-semibold">Port</p>
@@ -222,7 +227,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-900 border border-emerald-500/50 text-emerald-400 rounded-full shadow-2xl transition-all opacity-0 translate-y-10 pointer-events-none flex items-center gap-3">
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-900 border border-emerald-500/50 text-emerald-400 rounded-full shadow-2xl transition-all opacity-0 translate-y-10 pointer-events-none flex items-center gap-2">
         <i data-lucide="check-circle-2" class="w-4 h-4"></i>
         <span id="toastMsg" class="font-bold text-sm">Action Successful</span>
     </div>
@@ -367,8 +372,8 @@
             const section = document.getElementById('authSection');
             if (state.isLoggedIn) {
                 section.innerHTML = `
-                    <div class="flex items-center gap-3 bg-zinc-900/50 p-1 pr-4 rounded-full border ${state.isOwner ? 'border-emerald-500/50 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]' : 'border-zinc-800'}">
-                        <div class="w-8 h-8 rounded-full shrink-0 ${state.isOwner ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'} flex items-center justify-center uppercase font-bold text-sm relative">
+                    <div class="flex items-center gap-3 bg-zinc-900/50 p-1 pr-4 rounded-full border ${state.isOwner ? 'border-emerald-500/50 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]' : 'border-zinc-800'} transition-all">
+                        <div class="w-8 h-8 rounded-full shrink-0 ${state.isOwner ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-400'} flex items-center justify-center uppercase font-bold text-xs relative">
                             ${state.userName.charAt(0)}
                             ${state.isOwner ? '<i data-lucide="crown" class="w-2.5 h-2.5 absolute -top-1 -right-1 text-yellow-500 fill-yellow-500"></i>' : ''}
                         </div>
@@ -428,7 +433,7 @@
                         <div class="p-4 border-t border-zinc-800 bg-zinc-950/50">
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono">></span>
-                                <input id="commandInput" type="text" placeholder="Enter server command..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all" onkeydown="handleCommand(event)">
+                                <input id="commandInput" type="text" placeholder="Enter server command..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-white" onkeydown="handleCommand(event)">
                             </div>
                         </div>
                     </div>
